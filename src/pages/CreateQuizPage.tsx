@@ -127,7 +127,7 @@ export default function CreateQuizPage() {
         </div>
 
         {/* AI Section */}
-        <Card className="border-primary/20 bg-accent/30">
+        <Card className="border-primary/20 bg-primary/5 rounded-2xl shadow-card">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 font-heading">
               <Sparkles className="h-5 w-5 text-primary" />
@@ -149,7 +149,7 @@ export default function CreateQuizPage() {
         </Card>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <Card>
+          <Card className="rounded-2xl shadow-card">
             <CardHeader>
               <CardTitle className="font-heading">Quiz Details</CardTitle>
             </CardHeader>

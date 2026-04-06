@@ -40,7 +40,14 @@ export default function AnalyticsPage() {
     { name: "Wrong", value: totalQuestions - totalCorrect },
   ];
 
-  const COLORS = ["hsl(165, 80%, 38%)", "hsl(0, 72%, 55%)"];
+  // Using CSS custom properties for chart colors
+  const COLORS = ["hsl(var(--chart-correct))", "hsl(var(--chart-wrong))"];
+
+  const stats = [
+    { label: "Quizzes Taken", value: totalAttempts, icon: BookOpen, bg: "bg-primary/10 text-primary" },
+    { label: "Accuracy", value: `${accuracy}%`, icon: Target, bg: "bg-accent/10 text-accent" },
+    { label: "Total Score", value: `${totalCorrect}/${totalQuestions}`, icon: TrendingUp, bg: "bg-secondary/10 text-secondary" },
+  ];
 
   return (
     <AppLayout>
@@ -51,44 +58,24 @@ export default function AnalyticsPage() {
         </div>
 
         <div className="grid gap-4 sm:grid-cols-3">
-          <Card>
-            <CardContent className="flex items-center gap-4 pt-6">
-              <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                <BookOpen className="h-6 w-6" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Quizzes Taken</p>
-                <p className="font-heading text-2xl font-bold">{totalAttempts}</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="flex items-center gap-4 pt-6">
-              <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-accent text-accent-foreground">
-                <Target className="h-6 w-6" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Accuracy</p>
-                <p className="font-heading text-2xl font-bold">{accuracy}%</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="flex items-center gap-4 pt-6">
-              <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-secondary text-secondary-foreground">
-                <TrendingUp className="h-6 w-6" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Total Score</p>
-                <p className="font-heading text-2xl font-bold">{totalCorrect}/{totalQuestions}</p>
-              </div>
-            </CardContent>
-          </Card>
+          {stats.map((stat) => (
+            <Card key={stat.label} className="rounded-2xl shadow-card">
+              <CardContent className="flex items-center gap-4 p-6">
+                <div className={`inline-flex h-12 w-12 items-center justify-center rounded-xl ${stat.bg}`}>
+                  <stat.icon className="h-6 w-6" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">{stat.label}</p>
+                  <p className="font-heading text-2xl font-bold">{stat.value}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
         {attempts.length > 0 ? (
           <div className="grid gap-6 lg:grid-cols-2">
-            <Card>
+            <Card className="rounded-2xl shadow-card">
               <CardHeader>
                 <CardTitle className="font-heading">Score History</CardTitle>
               </CardHeader>
@@ -98,13 +85,20 @@ export default function AnalyticsPage() {
                     <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                     <XAxis dataKey="name" className="text-xs" />
                     <YAxis domain={[0, 100]} className="text-xs" />
-                    <Tooltip />
-                    <Bar dataKey="score" fill="hsl(165, 80%, 38%)" radius={[6, 6, 0, 0]} />
+                    <Tooltip
+                      contentStyle={{
+                        borderRadius: "0.75rem",
+                        border: "1px solid hsl(var(--border))",
+                        backgroundColor: "hsl(var(--card))",
+                        color: "hsl(var(--card-foreground))",
+                      }}
+                    />
+                    <Bar dataKey="score" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="rounded-2xl shadow-card">
               <CardHeader>
                 <CardTitle className="font-heading">Accuracy Breakdown</CardTitle>
               </CardHeader>
@@ -116,16 +110,25 @@ export default function AnalyticsPage() {
                         <Cell key={i} fill={COLORS[i]} />
                       ))}
                     </Pie>
-                    <Tooltip />
+                    <Tooltip
+                      contentStyle={{
+                        borderRadius: "0.75rem",
+                        border: "1px solid hsl(var(--border))",
+                        backgroundColor: "hsl(var(--card))",
+                        color: "hsl(var(--card-foreground))",
+                      }}
+                    />
                   </PieChart>
                 </ResponsiveContainer>
               </CardContent>
             </Card>
           </div>
         ) : (
-          <Card>
-            <CardContent className="py-12 text-center text-muted-foreground">
-              No quizzes attempted yet. Join a quiz to see your analytics!
+          <Card className="rounded-2xl shadow-card">
+            <CardContent className="py-16 text-center text-muted-foreground">
+              <BookOpen className="mx-auto h-12 w-12 mb-4 opacity-30" />
+              <p className="text-lg font-medium">No quizzes attempted yet</p>
+              <p className="text-sm mt-1">Join a quiz to see your analytics here!</p>
             </CardContent>
           </Card>
         )}

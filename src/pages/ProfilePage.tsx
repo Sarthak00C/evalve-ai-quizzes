@@ -7,9 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { User, Sun, Moon } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Switch } from "@/components/ui/switch";
+import { User, Sun, Moon, Shield } from "lucide-react";
 
 export default function ProfilePage() {
   const { profile, user } = useAuth();
@@ -32,40 +32,63 @@ export default function ProfilePage() {
 
   return (
     <AppLayout>
-      <div className="max-w-lg mx-auto mt-8">
-        <Card className="animate-fade-in">
-          <CardHeader className="text-center">
-            <div className="mx-auto mb-2 inline-flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <User className="h-8 w-8" />
+      <div className="max-w-lg mx-auto mt-4 space-y-6">
+        <div>
+          <h2 className="font-heading text-3xl font-bold tracking-tight">Profile</h2>
+          <p className="text-muted-foreground mt-1">Manage your account settings</p>
+        </div>
+
+        <Card className="rounded-2xl shadow-card animate-fade-in">
+          <CardHeader className="text-center pb-2">
+            <div className="mx-auto mb-2 inline-flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <User className="h-10 w-10" />
             </div>
-            <CardTitle className="font-heading text-2xl">Profile</CardTitle>
+            <CardTitle className="font-heading text-xl">{profile?.name || "User"}</CardTitle>
+            <p className="text-sm text-muted-foreground capitalize flex items-center justify-center gap-1.5">
+              <Shield className="h-3.5 w-3.5" />
+              {profile?.role}
+            </p>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 pt-4">
             <div className="space-y-2">
               <Label>Name</Label>
-              <Input value={name} onChange={(e) => setName(e.target.value)} />
+              <Input value={name} onChange={(e) => setName(e.target.value)} className="rounded-xl h-11" />
             </div>
             <div className="space-y-2">
               <Label>Email</Label>
-              <Input value={profile?.email || ""} disabled />
+              <Input value={profile?.email || ""} disabled className="rounded-xl h-11" />
             </div>
-            <div className="space-y-2">
-              <Label>Role</Label>
-              <Input value={profile?.role || ""} disabled className="capitalize" />
-            </div>
-            <div className="flex items-center justify-between rounded-lg border p-4">
+            <Button onClick={handleSave} disabled={saving} className="w-full h-11 rounded-xl font-medium">
+              {saving ? "Saving..." : "Save Changes"}
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-2xl shadow-card animate-fade-in">
+          <CardHeader>
+            <CardTitle className="font-heading text-lg">Appearance</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between rounded-xl border p-4">
               <div className="flex items-center gap-3">
-                {theme === "light" ? <Sun className="h-5 w-5 text-primary" /> : <Moon className="h-5 w-5 text-primary" />}
+                {theme === "light" ? (
+                  <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    <Sun className="h-5 w-5" />
+                  </div>
+                ) : (
+                  <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    <Moon className="h-5 w-5" />
+                  </div>
+                )}
                 <div>
                   <p className="text-sm font-medium">Dark Mode</p>
-                  <p className="text-xs text-muted-foreground">Toggle between light and dark theme</p>
+                  <p className="text-xs text-muted-foreground">
+                    {theme === "light" ? "Currently using light theme" : "Currently using dark theme"}
+                  </p>
                 </div>
               </div>
               <Switch checked={theme === "dark"} onCheckedChange={toggleTheme} />
             </div>
-            <Button onClick={handleSave} disabled={saving} className="w-full">
-              {saving ? "Saving..." : "Save Changes"}
-            </Button>
           </CardContent>
         </Card>
       </div>

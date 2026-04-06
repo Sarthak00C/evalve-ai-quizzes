@@ -41,10 +41,10 @@ export default function JoinQuizPage() {
   return (
     <AppLayout>
       <div className="max-w-md mx-auto mt-12">
-        <Card className="animate-fade-in">
-          <CardHeader className="text-center">
-            <div className="mx-auto mb-2 inline-flex h-14 w-14 items-center justify-center rounded-xl bg-accent text-accent-foreground">
-              <Users className="h-7 w-7" />
+        <Card className="rounded-2xl shadow-card animate-fade-in">
+          <CardHeader className="text-center pb-2">
+            <div className="mx-auto mb-3 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-secondary/10 text-secondary">
+              <Users className="h-8 w-8" />
             </div>
             <CardTitle className="font-heading text-2xl">Join a Quiz</CardTitle>
             <CardDescription>Enter the quiz code shared by your teacher</CardDescription>
@@ -58,11 +58,11 @@ export default function JoinQuizPage() {
                   onChange={(e) => setCode(e.target.value)}
                   required
                   placeholder="e.g. abc123"
-                  className="text-center text-lg tracking-widest font-heading"
+                  className="text-center text-lg tracking-widest font-heading rounded-xl h-12"
                   maxLength={10}
                 />
               </div>
-              <Button type="submit" className="w-full" disabled={loading || !code.trim()}>
+              <Button type="submit" className="w-full h-11 rounded-xl font-medium" disabled={loading || !code.trim()}>
                 {loading ? "Joining..." : "Join Quiz"}
               </Button>
             </form>

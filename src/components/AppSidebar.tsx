@@ -43,22 +43,22 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="font-heading text-base tracking-tight">
+          <SidebarGroupLabel className="font-heading text-base tracking-tight px-2 py-4">
             {!collapsed && (
-              <span className="flex items-center gap-2">
-                <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-primary font-heading text-sm font-bold text-primary-foreground">
+              <span className="flex items-center gap-2.5">
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-primary font-heading text-sm font-bold text-primary-foreground shadow-soft">
                   E
                 </span>
-                Evalve Tech
+                <span className="font-semibold">Evalve Tech</span>
               </span>
             )}
             {collapsed && (
-              <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-primary font-heading text-sm font-bold text-primary-foreground">
+              <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-primary font-heading text-sm font-bold text-primary-foreground shadow-soft">
                 E
               </span>
             )}
           </SidebarGroupLabel>
-          <SidebarGroupContent className="mt-4">
+          <SidebarGroupContent className="mt-2">
             <SidebarMenu>
               {navItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
@@ -66,10 +66,10 @@ export function AppSidebar() {
                     <NavLink
                       to={item.url}
                       end
-                      className="hover:bg-sidebar-accent/50"
-                      activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                      className="rounded-xl transition-all duration-200 hover:bg-sidebar-accent/60"
+                      activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium shadow-soft"
                     >
-                      <item.icon className="mr-2 h-4 w-4" />
+                      <item.icon className="mr-2.5 h-4 w-4" />
                       {!collapsed && <span>{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
@@ -81,20 +81,20 @@ export function AppSidebar() {
       </SidebarContent>
       <SidebarFooter className="space-y-2 p-3">
         {!collapsed && profile && (
-          <div className="rounded-lg bg-muted p-3">
+          <div className="rounded-xl bg-muted/60 p-3">
             <p className="text-sm font-medium">{profile.name}</p>
             <p className="text-xs text-muted-foreground capitalize">{profile.role}</p>
           </div>
         )}
         <div className="flex items-center">
           {!collapsed && (
-            <Button variant="ghost" size="sm" onClick={signOut} className="flex-1 justify-start gap-2 text-destructive hover:text-destructive">
+            <Button variant="ghost" size="sm" onClick={signOut} className="flex-1 justify-start gap-2 rounded-xl text-destructive hover:text-destructive hover:bg-destructive/10">
               <LogOut className="h-4 w-4" />
               Sign Out
             </Button>
           )}
           {collapsed && (
-            <Button variant="ghost" size="icon" onClick={signOut} className="h-8 w-8 text-destructive hover:text-destructive">
+            <Button variant="ghost" size="icon" onClick={signOut} className="h-8 w-8 rounded-xl text-destructive hover:text-destructive hover:bg-destructive/10">
               <LogOut className="h-4 w-4" />
             </Button>
           )}

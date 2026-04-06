@@ -33,9 +33,9 @@ export default function SignupPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md animate-fade-in">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary font-heading text-xl font-bold text-primary-foreground">
+      <Card className="w-full max-w-md shadow-elevated rounded-2xl animate-fade-in">
+        <CardHeader className="text-center pb-2">
+          <div className="mx-auto mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-primary font-heading text-xl font-bold text-primary-foreground shadow-card">
             E
           </div>
           <CardTitle className="font-heading text-2xl">Create Account</CardTitle>
@@ -45,44 +45,52 @@ export default function SignupPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name">Full Name</Label>
-              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required placeholder="John Doe" />
+              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required placeholder="John Doe" className="rounded-xl h-11" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="you@example.com" />
+              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="you@example.com" className="rounded-xl h-11" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} placeholder="••••••••" />
+              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} placeholder="••••••••" className="rounded-xl h-11" />
             </div>
             <div className="space-y-2">
               <Label>I am a</Label>
               <div className="grid grid-cols-2 gap-3">
-                <Button
+                <button
                   type="button"
-                  variant={role === "student" ? "default" : "outline"}
                   onClick={() => setRole("student")}
-                  className="w-full"
+                  className={`flex flex-col items-center gap-1.5 rounded-xl border-2 p-4 transition-all duration-200 ${
+                    role === "student"
+                      ? "border-primary bg-primary/5 shadow-soft"
+                      : "border-border hover:border-primary/30"
+                  }`}
                 >
-                  🎓 Student
-                </Button>
-                <Button
+                  <span className="text-2xl">🎓</span>
+                  <span className="text-sm font-medium">Student</span>
+                </button>
+                <button
                   type="button"
-                  variant={role === "teacher" ? "default" : "outline"}
                   onClick={() => setRole("teacher")}
-                  className="w-full"
+                  className={`flex flex-col items-center gap-1.5 rounded-xl border-2 p-4 transition-all duration-200 ${
+                    role === "teacher"
+                      ? "border-primary bg-primary/5 shadow-soft"
+                      : "border-border hover:border-primary/30"
+                  }`}
                 >
-                  📚 Teacher
-                </Button>
+                  <span className="text-2xl">📚</span>
+                  <span className="text-sm font-medium">Teacher</span>
+                </button>
               </div>
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full h-11 rounded-xl font-medium" disabled={loading}>
               {loading ? "Creating account..." : "Sign Up"}
             </Button>
           </form>
-          <p className="mt-4 text-center text-sm text-muted-foreground">
+          <p className="mt-6 text-center text-sm text-muted-foreground">
             Already have an account?{" "}
-            <Link to="/login" className="text-primary hover:underline">Sign in</Link>
+            <Link to="/login" className="text-primary font-medium hover:underline">Sign in</Link>
           </p>
         </CardContent>
       </Card>

@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppLayout } from "@/components/AppLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Trophy, Medal } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Trophy, Medal, Search } from "lucide-react";
 
 interface LeaderboardEntry {
   rank: number;
@@ -34,12 +35,10 @@ export default function LeaderboardPage() {
 
     if (!attempts) { setEntries([]); setLoading(false); return; }
 
-    // Fetch profiles for users
     const userIds = [...new Set(attempts.map((a) => a.user_id))];
     const { data: profiles } = await supabase.from("profiles").select("id, name").in("id", userIds);
     const profileMap = new Map(profiles?.map((p) => [p.id, p.name]) ?? []);
 
-    // Best score per user
     const bestScores = new Map<string, { score: number; total: number }>();
     attempts.forEach((a) => {
       const existing = bestScores.get(a.user_id);
@@ -61,11 +60,11 @@ export default function LeaderboardPage() {
     setLoading(false);
   };
 
-  const getRankIcon = (rank: number) => {
-    if (rank === 1) return <Trophy className="h-5 w-5 text-yellow-500" />;
-    if (rank === 2) return <Medal className="h-5 w-5 text-gray-400" />;
-    if (rank === 3) return <Medal className="h-5 w-5 text-amber-700" />;
-    return <span className="text-sm font-medium text-muted-foreground">#{rank}</span>;
+  const getRankDisplay = (rank: number) => {
+    if (rank === 1) return <div className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-yellow-100 dark:bg-yellow-500/20"><Trophy className="h-4 w-4 text-yellow-600 dark:text-yellow-400" /></div>;
+    if (rank === 2) return <div className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-muted"><Medal className="h-4 w-4 text-muted-foreground" /></div>;
+    if (rank === 3) return <div className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-orange-100 dark:bg-orange-500/20"><Medal className="h-4 w-4 text-orange-600 dark:text-orange-400" /></div>;
+    return <div className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-muted text-sm font-medium text-muted-foreground">#{rank}</div>;
   };
 
   return (
@@ -77,15 +76,16 @@ export default function LeaderboardPage() {
         </div>
 
         <div className="flex gap-3">
-          <div className="flex-1 space-y-2">
-            <Input
-              value={quizCode}
-              onChange={(e) => setQuizCode(e.target.value)}
-              placeholder="Enter quiz code..."
-              className="tracking-widest font-heading"
-              onKeyDown={(e) => e.key === "Enter" && fetchLeaderboard(quizCode)}
-            />
-          </div>
+          <Input
+            value={quizCode}
+            onChange={(e) => setQuizCode(e.target.value)}
+            placeholder="Enter quiz code..."
+            className="tracking-widest font-heading rounded-xl h-11"
+            onKeyDown={(e) => e.key === "Enter" && fetchLeaderboard(quizCode)}
+          />
+          <Button onClick={() => fetchLeaderboard(quizCode)} className="rounded-xl h-11 px-6" disabled={!quizCode.trim()}>
+            <Search className="h-4 w-4 mr-2" /> Search
+          </Button>
         </div>
 
         {quizTitle && (
@@ -93,13 +93,13 @@ export default function LeaderboardPage() {
         )}
 
         {entries.length > 0 && (
-          <Card>
+          <Card className="rounded-2xl shadow-card overflow-hidden">
             <CardContent className="p-0">
-              <div className="divide-y">
+              <div className="divide-y divide-border">
                 {entries.map((entry) => (
-                  <div key={entry.rank} className={`flex items-center justify-between p-4 ${entry.rank <= 3 ? "bg-accent/30" : ""}`}>
+                  <div key={entry.rank} className={`flex items-center justify-between p-4 transition-colors ${entry.rank <= 3 ? "bg-muted/30" : ""}`}>
                     <div className="flex items-center gap-4">
-                      <div className="flex h-8 w-8 items-center justify-center">{getRankIcon(entry.rank)}</div>
+                      {getRankDisplay(entry.rank)}
                       <span className="font-medium">{entry.name}</span>
                     </div>
                     <div className="text-right">
@@ -114,7 +114,11 @@ export default function LeaderboardPage() {
         )}
 
         {!loading && entries.length === 0 && quizTitle && (
-          <p className="text-center text-muted-foreground py-8">No attempts yet for this quiz.</p>
+          <Card className="rounded-2xl shadow-card">
+            <CardContent className="py-12 text-center text-muted-foreground">
+              No attempts yet for this quiz.
+            </CardContent>
+          </Card>
         )}
       </div>
     </AppLayout>

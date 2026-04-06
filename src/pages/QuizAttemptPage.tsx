@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
-import { Clock, CheckCircle2 } from "lucide-react";
+import { Clock, CheckCircle2, ArrowLeft, ArrowRight } from "lucide-react";
 
 interface Question {
   id: string;
@@ -53,7 +53,6 @@ export default function QuizAttemptPage() {
     fetchQuiz();
   }, [quizId, navigate]);
 
-  // Timer
   useEffect(() => {
     if (submitted || loading || timeLeft <= 0) return;
     const timer = setInterval(() => {
@@ -99,20 +98,27 @@ export default function QuizAttemptPage() {
   }
 
   if (submitted) {
+    const pct = questions.length > 0 ? Math.round((score / questions.length) * 100) : 0;
     return (
       <AppLayout>
         <div className="max-w-lg mx-auto mt-12 text-center animate-fade-in">
-          <CheckCircle2 className="mx-auto h-16 w-16 text-primary mb-4" />
+          <div className="mx-auto mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
+            <CheckCircle2 className="h-10 w-10 text-primary" />
+          </div>
           <h2 className="font-heading text-3xl font-bold">Quiz Complete!</h2>
-          <p className="text-muted-foreground mt-2 text-lg">
+          <p className="text-muted-foreground mt-3 text-lg">
             You scored <span className="font-bold text-primary">{score}</span> out of <span className="font-bold">{questions.length}</span>
           </p>
-          <p className="text-muted-foreground">
-            Accuracy: {questions.length > 0 ? Math.round((score / questions.length) * 100) : 0}%
-          </p>
-          <div className="mt-6 flex gap-3 justify-center">
-            <Button onClick={() => navigate("/leaderboard")}>View Leaderboard</Button>
-            <Button variant="outline" onClick={() => navigate("/dashboard")}>Back to Dashboard</Button>
+          <div className="mt-4 mx-auto max-w-xs">
+            <div className="flex justify-between text-sm text-muted-foreground mb-1.5">
+              <span>Accuracy</span>
+              <span className="font-medium">{pct}%</span>
+            </div>
+            <Progress value={pct} className="h-3 rounded-full" />
+          </div>
+          <div className="mt-8 flex gap-3 justify-center">
+            <Button onClick={() => navigate("/leaderboard")} className="rounded-xl">View Leaderboard</Button>
+            <Button variant="outline" onClick={() => navigate("/dashboard")} className="rounded-xl">Dashboard</Button>
           </div>
         </div>
       </AppLayout>
@@ -129,31 +135,37 @@ export default function QuizAttemptPage() {
             <h2 className="font-heading text-xl font-bold">{quiz?.title}</h2>
             <p className="text-sm text-muted-foreground">Question {currentIdx + 1} of {questions.length}</p>
           </div>
-          <div className={`flex items-center gap-2 text-sm font-medium ${timeLeft < 60 ? "text-destructive" : "text-muted-foreground"}`}>
+          <div className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium ${
+            timeLeft < 60 ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground"
+          }`}>
             <Clock className="h-4 w-4" />
             {formatTime(timeLeft)}
           </div>
         </div>
 
-        <Progress value={((currentIdx + 1) / questions.length) * 100} className="h-2" />
+        <Progress value={((currentIdx + 1) / questions.length) * 100} className="h-2 rounded-full" />
 
         {currentQ && (
-          <Card className="animate-fade-in">
-            <CardHeader>
-              <CardTitle className="font-heading text-lg">{currentQ.question_text}</CardTitle>
+          <Card className="rounded-2xl shadow-card animate-fade-in">
+            <CardHeader className="pb-3">
+              <CardTitle className="font-heading text-lg leading-relaxed">{currentQ.question_text}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {currentQ.options.map((opt, oIdx) => (
                 <button
                   key={oIdx}
                   onClick={() => setAnswers({ ...answers, [currentQ.id]: oIdx })}
-                  className={`w-full text-left rounded-lg border p-4 transition-all ${
+                  className={`w-full text-left rounded-xl border-2 p-4 transition-all duration-200 ${
                     answers[currentQ.id] === oIdx
-                      ? "border-primary bg-primary/10 font-medium"
-                      : "border-border hover:border-primary/50 hover:bg-muted"
+                      ? "border-primary bg-primary/5 shadow-soft"
+                      : "border-border hover:border-primary/30 hover:bg-muted/50"
                   }`}
                 >
-                  <span className="mr-3 inline-flex h-6 w-6 items-center justify-center rounded-full border text-xs font-medium">
+                  <span className={`mr-3 inline-flex h-7 w-7 items-center justify-center rounded-lg text-xs font-semibold ${
+                    answers[currentQ.id] === oIdx
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground"
+                  }`}>
                     {String.fromCharCode(65 + oIdx)}
                   </span>
                   {opt}
@@ -164,15 +176,15 @@ export default function QuizAttemptPage() {
         )}
 
         <div className="flex justify-between">
-          <Button variant="outline" onClick={() => setCurrentIdx(Math.max(0, currentIdx - 1))} disabled={currentIdx === 0}>
-            Previous
+          <Button variant="outline" onClick={() => setCurrentIdx(Math.max(0, currentIdx - 1))} disabled={currentIdx === 0} className="rounded-xl gap-2">
+            <ArrowLeft className="h-4 w-4" /> Previous
           </Button>
           {currentIdx < questions.length - 1 ? (
-            <Button onClick={() => setCurrentIdx(currentIdx + 1)}>
-              Next
+            <Button onClick={() => setCurrentIdx(currentIdx + 1)} className="rounded-xl gap-2">
+              Next <ArrowRight className="h-4 w-4" />
             </Button>
           ) : (
-            <Button onClick={handleSubmit}>Submit Quiz</Button>
+            <Button onClick={handleSubmit} className="rounded-xl">Submit Quiz</Button>
           )}
         </div>
       </div>
