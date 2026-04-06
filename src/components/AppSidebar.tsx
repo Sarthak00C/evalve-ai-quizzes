@@ -6,13 +6,10 @@ import {
   BarChart3,
   User,
   LogOut,
-  Sun,
-  Moon,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { useTheme } from "@/contexts/ThemeContext";
 import {
   Sidebar,
   SidebarContent,
@@ -90,10 +87,7 @@ export function AppSidebar() {
             <p className="text-xs text-muted-foreground capitalize">{profile.role}</p>
           </div>
         )}
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-8 w-8">
-            {theme === "light" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
-          </Button>
+        <div className="flex items-center">
           {!collapsed && (
             <Button variant="ghost" size="sm" onClick={signOut} className="flex-1 justify-start gap-2 text-destructive hover:text-destructive">
               <LogOut className="h-4 w-4" />
