@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { apiClient } from "@/integrations/api/client";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,18 +19,12 @@ export default function JoinQuizPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from("quizzes")
-        .select("id")
-        .eq("quiz_code", code.trim().toLowerCase())
-        .eq("is_active", true)
-        .single();
-
-      if (error || !data) {
+      const data = await apiClient.getQuizByCode(code.trim());
+      if (!data || !data.quiz) {
         toast({ title: "Quiz not found", description: "Check the code and try again.", variant: "destructive" });
         return;
       }
-      navigate(`/quiz/${data.id}`);
+      navigate(`/quiz/${data.quiz.id}`);
     } catch {
       toast({ title: "Error", description: "Something went wrong.", variant: "destructive" });
     } finally {

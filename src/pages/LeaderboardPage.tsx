@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { apiClient } from "@/integrations/api/client";
 import { AppLayout } from "@/components/AppLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,10 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Trophy, Medal, Search } from "lucide-react";
 
 interface LeaderboardEntry {
-  rank: number;
   name: string;
   score: number;
-  total: number;
+  totalQuestions: number;
+  percentage: number;
 }
 
 export default function LeaderboardPage() {
@@ -23,41 +23,27 @@ export default function LeaderboardPage() {
   const fetchLeaderboard = async (code: string) => {
     if (!code.trim()) return;
     setLoading(true);
-    const { data: quiz } = await supabase.from("quizzes").select("id, title").eq("quiz_code", code.trim().toLowerCase()).single();
-    if (!quiz) { setEntries([]); setQuizTitle(""); setLoading(false); return; }
-    setQuizTitle(quiz.title);
+    try {
+      const quizData = await apiClient.getQuizByCode(code.trim());
+      setQuizTitle(quizData.quiz.title);
 
-    const { data: attempts } = await supabase
-      .from("attempts")
-      .select("score, total_questions, user_id")
-      .eq("quiz_id", quiz.id)
-      .order("score", { ascending: false });
-
-    if (!attempts) { setEntries([]); setLoading(false); return; }
-
-    const userIds = [...new Set(attempts.map((a) => a.user_id))];
-    const { data: profiles } = await supabase.from("profiles").select("id, name").in("id", userIds);
-    const profileMap = new Map(profiles?.map((p) => [p.id, p.name]) ?? []);
-
-    const bestScores = new Map<string, { score: number; total: number }>();
-    attempts.forEach((a) => {
-      const existing = bestScores.get(a.user_id);
-      if (!existing || a.score > existing.score) {
-        bestScores.set(a.user_id, { score: a.score, total: a.total_questions });
-      }
-    });
-
-    const sorted = Array.from(bestScores.entries())
-      .sort((a, b) => b[1].score - a[1].score)
-      .map(([userId, { score, total }], idx) => ({
-        rank: idx + 1,
-        name: profileMap.get(userId) || "Unknown",
-        score,
-        total,
-      }));
-
-    setEntries(sorted);
-    setLoading(false);
+      const leaderboardData = await apiClient.getLeaderboard(code.trim());
+      const formattedEntries = leaderboardData.leaderboard.map(
+        (entry: any, idx: number) => ({
+          rank: idx + 1,
+          name: entry.name,
+          score: entry.score,
+          totalQuestions: entry.totalQuestions,
+          percentage: entry.percentage,
+        })
+      );
+      setEntries(formattedEntries);
+    } catch {
+      setEntries([]);
+      setQuizTitle("");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const getRankDisplay = (rank: number) => {
@@ -96,15 +82,16 @@ export default function LeaderboardPage() {
           <Card className="rounded-2xl shadow-card overflow-hidden">
             <CardContent className="p-0">
               <div className="divide-y divide-border">
-                {entries.map((entry) => (
-                  <div key={entry.rank} className={`flex items-center justify-between p-4 transition-colors ${entry.rank <= 3 ? "bg-muted/30" : ""}`}>
+                {entries.map((entry, idx) => (
+                  <div key={idx} className={`flex items-center justify-between p-4 transition-colors ${idx < 3 ? "bg-muted/30" : ""}`}>
                     <div className="flex items-center gap-4">
-                      {getRankDisplay(entry.rank)}
+                      {getRankDisplay(idx + 1)}
                       <span className="font-medium">{entry.name}</span>
                     </div>
                     <div className="text-right">
                       <span className="font-heading font-bold text-primary">{entry.score}</span>
-                      <span className="text-muted-foreground">/{entry.total}</span>
+                      <span className="text-muted-foreground">/{entry.totalQuestions}</span>
+                      <div className="text-xs text-muted-foreground">{entry.percentage}%</div>
                     </div>
                   </div>
                 ))}

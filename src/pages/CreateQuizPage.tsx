@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { apiClient } from "@/integrations/api/client";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -60,10 +60,7 @@ export default function CreateQuizPage() {
     if (!aiPrompt.trim()) return;
     setAiLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("generate-quiz", {
-        body: { prompt: aiPrompt, topic, difficulty, count: 5 },
-      });
-      if (error) throw error;
+      const data = await apiClient.generateQuiz(aiPrompt, topic, difficulty, 5);
       if (data?.questions) {
         const mapped = data.questions.map((q: any) => ({
           question_text: q.question,
@@ -87,28 +84,20 @@ export default function CreateQuizPage() {
     if (!user) return;
     setLoading(true);
     try {
-      const { data: quiz, error: quizError } = await supabase
-        .from("quizzes")
-        .insert({ title, topic, difficulty, time_limit: timeLimit, created_by: user.id })
-        .select()
-        .single();
+      const quizResponse = await apiClient.createQuiz(title, topic, difficulty, timeLimit);
+      const quizId = quizResponse.quiz.id;
 
-      if (quizError) throw quizError;
-
-      const questionsToInsert = questions.map((q, i) => ({
-        quiz_id: quiz.id,
-        question_text: q.question_text,
+      const questionsToInsert = questions.map((q) => ({
+        questionText: q.question_text,
         options: q.options,
-        correct_answer: q.correct_answer,
-        order_index: i,
+        correctAnswer: q.correct_answer,
       }));
 
-      const { error: qError } = await supabase.from("questions").insert(questionsToInsert);
-      if (qError) throw qError;
+      await apiClient.addQuestions(quizId, questionsToInsert);
 
       toast({
         title: "Quiz created!",
-        description: `Quiz code: ${quiz.quiz_code}. Share it with your students!`,
+        description: `Quiz code: ${quizResponse.quiz.quizCode}. Share it with your students!`,
       });
       navigate("/dashboard");
     } catch (err: any) {

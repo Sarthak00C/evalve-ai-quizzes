@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { apiClient } from "@/integrations/api/client";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,10 +11,10 @@ import { Clock, CheckCircle2, ArrowLeft, ArrowRight } from "lucide-react";
 
 interface Question {
   id: string;
-  question_text: string;
+  questionText: string;
   options: string[];
-  correct_answer: number;
-  order_index: number;
+  correctAnswer: number;
+  orderIndex: number;
 }
 
 export default function QuizAttemptPage() {
@@ -35,20 +35,26 @@ export default function QuizAttemptPage() {
   useEffect(() => {
     const fetchQuiz = async () => {
       if (!quizId) return;
-      const { data: quizData } = await supabase.from("quizzes").select("*").eq("id", quizId).single();
-      if (!quizData) { navigate("/join-quiz"); return; }
-      setQuiz(quizData);
-      setTimeLeft(quizData.time_limit * 60);
+      try {
+        const quizData = await apiClient.getQuiz(quizId);
+        setQuiz(quizData.quiz);
+        setTimeLeft(quizData.quiz.timeLimit * 60);
 
-      const { data: qData } = await supabase
-        .from("questions")
-        .select("*")
-        .eq("quiz_id", quizId)
-        .order("order_index");
-      if (qData) {
-        setQuestions(qData.map((q) => ({ ...q, options: q.options as unknown as string[] })));
+        const questionsData = quizData.questions || [];
+        setQuestions(
+          questionsData.map((q: any) => ({
+            id: q.id,
+            questionText: q.questionText,
+            options: q.options,
+            correctAnswer: q.correctAnswer,
+            orderIndex: q.orderIndex,
+          }))
+        );
+      } catch {
+        navigate("/join-quiz");
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
     fetchQuiz();
   }, [quizId, navigate]);
@@ -57,7 +63,10 @@ export default function QuizAttemptPage() {
     if (submitted || loading || timeLeft <= 0) return;
     const timer = setInterval(() => {
       setTimeLeft((t) => {
-        if (t <= 1) { handleSubmit(); return 0; }
+        if (t <= 1) {
+          handleSubmit();
+          return 0;
+        }
         return t - 1;
       });
     }, 1000);
@@ -69,20 +78,31 @@ export default function QuizAttemptPage() {
     setSubmitted(true);
 
     let correct = 0;
-    questions.forEach((q) => {
-      if (answers[q.id] === q.correct_answer) correct++;
+    const submittedAnswers = questions.map((q) => {
+      const selectedAnswer = answers[q.id] ?? -1;
+      if (selectedAnswer === q.correctAnswer) {
+        correct++;
+      }
+      return {
+        questionId: q.id,
+        selectedAnswer,
+      };
     });
     setScore(correct);
 
-    await supabase.from("attempts").insert({
-      user_id: user.id,
-      quiz_id: quizId,
-      score: correct,
-      total_questions: questions.length,
-      answers: answers as any,
-    });
-
-    toast({ title: "Quiz submitted!", description: `You scored ${correct}/${questions.length}` });
+    try {
+      await apiClient.submitAttempt(quizId, submittedAnswers);
+      toast({
+        title: "Quiz submitted!",
+        description: `You scored ${correct}/${questions.length}`,
+      });
+    } catch (err: any) {
+      toast({
+        title: "Error submitting quiz",
+        description: err.message,
+        variant: "destructive",
+      });
+    }
   }, [submitted, user, quizId, questions, answers, toast]);
 
   const formatTime = (s: number) => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
@@ -148,7 +168,7 @@ export default function QuizAttemptPage() {
         {currentQ && (
           <Card className="rounded-2xl shadow-card animate-fade-in">
             <CardHeader className="pb-3">
-              <CardTitle className="font-heading text-lg leading-relaxed">{currentQ.question_text}</CardTitle>
+              <CardTitle className="font-heading text-lg leading-relaxed">{currentQ.questionText}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {currentQ.options.map((opt, oIdx) => (
